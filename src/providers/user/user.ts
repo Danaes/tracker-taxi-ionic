@@ -1,3 +1,4 @@
+import { Subscription } from 'rxjs/Subscription';
 import { Platform } from 'ionic-angular';
 import { Injectable } from '@angular/core';
 import { AngularFirestore } from 'angularfire2/firestore';
@@ -9,6 +10,8 @@ export class UserProvider {
   key: string;
   user: any = {};
 
+  doc: Subscription
+
   constructor(private afDB: AngularFirestore,
               private storage: Storage,
               private platform: Platform) {}
@@ -19,7 +22,7 @@ export class UserProvider {
 
     return new Promise( (resolve, reject) => {
 
-      this.afDB.doc(`/usuarios/${ key }`)
+      this.doc = this.afDB.doc(`/usuarios/${ key }`)
         .valueChanges().subscribe( data => {
 
           if( data ){ //correcto
@@ -75,6 +78,15 @@ export class UserProvider {
         } else resolve( false );
 
     });
+  }
+
+  deleteUser(){
+    this.key = null;
+
+    if( this.platform.is('cordova')) this.storage.remove('key');
+    else localStorage.removeItem('key');
+
+    this.doc.unsubscribe();
   }
 
 }
